@@ -9,10 +9,17 @@ The cipher is implemented as a SPN block cipher. It consists of 3 rounds of *Add
 
 ## Linear Cryptanalysis
 The program tries to find a good relation between some bits of the plaintext and some bits of the last round sboxes input which should approximate, at least locally, the behaviour of the cipher with a certain theoretical probability, different from 0.5.
+
 Then, it generates a random set of <ptx, ctx> pairs (ptx -> plaintext; ctx -> ciphertext) computed with a random key, and tries to guess some of the bits of the last round by computing the actual probability, over the whole set, that the relation holds with all the possible subkeys. 
+
 The subkey having the highest bias (in absolute value) is considered to be the correct guess.
 
 ## Comments
 For now, the analysis does not always work. Many times it does the wrong guess because there are 2 different subkeys with the very same probabilty, and it keeps the first one it tries.
+
 Some other times, the guessed subkey is terribly wrong.
+
 Working on fixing this behaviour to try and make the guess as much as correct as possible.
+
+***NOTE**: this project is to be considered as it is: an academic project, thought to try and get in depth knowledge about linear cryptanalysis. This is not a guide or a manual or an actual implementation of a cipher or of the linear cryptanalysis algorithm.
+Much of the complexity is simplified in the context with respect to real secure ciphers.*
