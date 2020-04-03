@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="SimpleCipher"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SimpleCipher">
+				<Option output="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/SimpleCipher" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 SimpleCipher"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SimpleCipher/fast">
+				<Option output="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/SimpleCipher" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 SimpleCipher/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/krijojo/CLionProjects/SimpleCipher/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/bitvector.c">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/bitvector.h">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/couple.h">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.c">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.h">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/list.c">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/list.h">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/main.c">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/src/sbox.h">
+			<Option target="SimpleCipher"/>
+		</Unit>
+		<Unit filename="/Users/krijojo/CLionProjects/SimpleCipher/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
