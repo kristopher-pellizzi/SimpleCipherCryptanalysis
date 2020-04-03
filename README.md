@@ -1,5 +1,5 @@
 # SimpleCipherCryptanalysis
-Academic Attempt to implement Simple block cipher and linear cryptanalysis algorithm.
+Academic attempt to implement Simple block cipher and linear cryptanalysis algorithm.
 
 ## Abstract
 This project is an academic attempt, as a student, to implement the ***Simple*** block cipher (16 bit block cipher, with 80 bit key) and to perform linear cryptanalysis to get at least a subset of the bits of the last 16 bit round key.
