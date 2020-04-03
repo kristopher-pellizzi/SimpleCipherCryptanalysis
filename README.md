@@ -2,7 +2,7 @@
 Academic attempt to implement Simple block cipher and linear cryptanalysis algorithm.
 
 ## Abstract
-This project is an academic attempt, as a student, to implement the ***Simple*** block cipher (16 bit block cipher, with 80 bit key) and to perform linear cryptanalysis to get at least a subset of the bits of the last 16 bit round key.
+This project is an academic attempt, as a student, to implement the ***Simple*** block cipher (16 bit block cipher, with 80 bit key) and to perform linear cryptanalysis to get at least a subset of the bits of the last 16 bit round key in order to decrease the number of attempts needed to bruteforce the whole key.
 
 ## The cipher
 The cipher is implemented as a SPN block cipher. It consists of 3 rounds of *Add_Round_Key*, *Substitution Layer* (SBOXES) and *Permutation Layer*. The last round is composed by *Add_Round_Key*, *Substitution Layer*, *Add_Round_Key*.
