@@ -325,18 +325,16 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
             key_bits_number += U[3][j];
         }
 
-        // TODO: to be fixed in case more bits of those in input to last round sboxes are entering the same sbox (doing #key_bits * 4 gives more output bits than actual number)
         key_bits_number *= 4;
 
         bitvector16* key_vector;
 
         double previous_diff = -1;
-        int most_probable_subkeys[2] = {-1, -1};
-        bitvector16* saved_key_vector[2] = {NULL, NULL};
+        int most_probable_subkey = -1;
         u_int8_t output_sboxes_touched[4] = {0};
 
         for(int j = 0; j < (1 << key_bits_number); j++){
-            double counter = 0;
+            u_int64_t counter = 0;
             key_vector = get_bitvector16(0);
             int considered_bit = 0;
             bitvector* subkey_bitvector = get_bitvector(j, key_bits_number);
@@ -358,7 +356,7 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
             for(int k = 0; k < 4; k++){
                 if(output_sboxes_touched[k]){
                     for(int q = 3; q >= 0; q--) {
-                        key_vector->repr[4 * (3 - k) + q] = subkey_bitvector->repr[key_bits_number - 1 - considered_bit];
+                        key_vector->repr[4 * (3 - k) + q] = subkey_bitvector->repr[3 - considered_bit];
                         considered_bit++;
                     }
                 }
@@ -387,44 +385,34 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
                 }
             }
 
-            double bias = (counter - number_of_couples / 2) / number_of_couples;
-            printf("SUBKEY: %d\tCOUNTER: %d\tBIAS: %.30f\n", j, abs(counter - number_of_couples / 2), bias);
+            double bias = ((float) counter / number_of_couples) - 0.5;
+            printf("SUBKEY: %d\tBIAS: %.30f\n", j, bias);
             if(fabs(bias) > previous_diff){
                 previous_diff = fabs(bias);
-                most_probable_subkeys[0] = j;
-                saved_key_vector[0] = key_vector;
-            }
-            else if(fabs(bias) == previous_diff){
-                most_probable_subkeys[1] = j;
-                saved_key_vector[1] = key_vector;
+                most_probable_subkey = j;
             }
 
         }
 
-        for(int z = 0; z < 2 && saved_key_vector[z] != NULL; z++) {
-            int considered_bit = 0;
-            bitvector *key_bitvector = get_bitvector(most_probable_subkeys[z], key_bits_number);
-            print_bitvector(key_bitvector);
-            key_vector = get_bitvector16(0);
+        int considered_bit = 0;
+        bitvector* key_bitvector = get_bitvector(most_probable_subkey, key_bits_number);
+        print_bitvector(key_bitvector);
+        key_vector = get_bitvector16(0);
 
-            for (int k = 0; k < 4; k++) {
-                if (output_sboxes_touched[k]) {
-                    for (int q = 0; q < 4; q++) {
-                        key_vector->repr[4 * (3 - k) + q] = key_bitvector->repr[considered_bit];
-                        considered_bit++;
-                    }
+        for(int k = 0; k < 4; k++){
+            if(output_sboxes_touched[k]){
+                for(int q = 0; q < 4; q++) {
+                    printf("k = %d\n", k);
+                    key_vector->repr[4 * (3 - k) + q] = key_bitvector->repr[considered_bit];
+                    considered_bit++;
                 }
             }
         }
 
         printf("sbox_input: ");
         print_state(U[3]);
-        printf("\tkey1: ");
-        print_bitvector16(saved_key_vector[0]);
-        if(saved_key_vector[1] != NULL) {
-            printf("\tkey1: ");
-            print_bitvector16(saved_key_vector[1]);
-        }
+        printf("\tkey: ");
+        print_bitvector16(key_vector);
         printf("Key bits: %d\n", key_bits_number);
 
         /*print_state(U[0]);
