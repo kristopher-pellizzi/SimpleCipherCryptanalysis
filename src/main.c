@@ -224,7 +224,7 @@ int test_list(){
 }
 
 int test_linear_cryptanalysis(){
-    int num =  20000;
+    int num =  40000;
     couple** pairs = (couple**)malloc(sizeof(couple*) * num);
 
     srand(time(0));

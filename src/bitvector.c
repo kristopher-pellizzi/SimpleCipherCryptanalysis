@@ -114,6 +114,9 @@ bitvector80_value* get_val80(bitvector80* vector){
 void print_bitvector80(bitvector80* vector){
     for(int i = 79; i >= 0; i--){
         printf("%d", vector->repr[i]);
+        if(i % 4 == 0){
+            printf("\t");
+        }
     }
     printf("\n");
 }
