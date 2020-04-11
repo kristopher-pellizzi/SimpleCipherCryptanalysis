@@ -3,6 +3,7 @@
 #include <string.h>
 #include "bitvector.h"
 
+// Given a value between 0 and 15, return a bitvector structure representing its binary encoding
 bitvector4* get_bitvector4(u_int8_t val){
     bitvector4* vector = (bitvector4*) malloc(sizeof(bitvector4));
     int pow = 1 << 4;
@@ -24,6 +25,7 @@ bitvector4* get_bitvector4(u_int8_t val){
     return vector;
 }
 
+// Given a bitvector with 4 bits as argument, return the value it is encoding
 u_int8_t get_val4(bitvector4* vector){
     u_int8_t ret = 0;
 
@@ -41,6 +43,7 @@ void print_bitvector4(bitvector4* vector){
     printf("\n");
 }
 
+// Given a value between 0 and 65535, return a bitvector structure representing its binary encoding
 bitvector16* get_bitvector16(u_int16_t val){
     bitvector16* vector;
 
@@ -56,6 +59,7 @@ bitvector16* get_bitvector16(u_int16_t val){
     return vector;
 }
 
+// Given a bitvector with 16 bits as argument, return the value it is encoding
 u_int16_t get_val16(bitvector16* vector){
     u_int16_t ret = 0;
 
@@ -72,6 +76,9 @@ void print_bitvector16(bitvector16* vector){
     printf("\n");
 }
 
+// Given a value 'key_MSB' between 0 and (2^64 - 1) and a value 'key_LSB' between 0 and 65535,
+// return a bitvector with 80 bits, whose 64 Most Significant Bits encode 'key_MSB',
+// while the last 16 Least Significant Bits encode 'key_LSB'
 bitvector80* get_bitvector80(u_int64_t key_MSB, u_int16_t key_LSB){
     bitvector80* vector;
 
@@ -96,6 +103,9 @@ bitvector80* get_bitvector80(u_int64_t key_MSB, u_int16_t key_LSB){
     return vector;
 }
 
+// Given a bitvector with 80 bits, return a structure containing a value 'MSB' between 0 and (2^64 - 1) and a
+// value 'LSB' between 0 and 65535. 'MSB' encoding is given by the 64 Most Significant Bits of the bitvector;
+// 'LSB' encoding is given by the last 16 Least Significatn Bits of the bitvector.
 bitvector80_value* get_val80(bitvector80* vector){
     bitvector80_value* ret = (bitvector80_value*)malloc(sizeof(bitvector80_value));
 
@@ -121,6 +131,8 @@ void print_bitvector80(bitvector80* vector){
     printf("\n");
 }
 
+// Given a value between 0 and 2^64 and a maximum number of bits, return a generic bitvector with 'max_bits'
+// bits encoding the value. If the value can't be represented with 'max_bits' bits, report error and abort execution
 bitvector* get_bitvector(u_int64_t val, unsigned int max_bits){
     if(max_bits > 64){
         fprintf(stderr, "Generic bitvectors with more than 64 bits not implemented yet\n");
@@ -143,6 +155,7 @@ bitvector* get_bitvector(u_int64_t val, unsigned int max_bits){
     return vector;
 }
 
+// Given a generic bitvector (with at most 64 bits), return the value it is encoding
 u_int64_t get_val(bitvector* vector){
     unsigned int size = vector->size;
     u_int64_t ret = 0;
