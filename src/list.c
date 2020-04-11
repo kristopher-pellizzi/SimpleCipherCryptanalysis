@@ -8,6 +8,8 @@
 #include "list.h"
 #include "bitvector.h"
 
+// Given the pointer to the head of the list and a pointer to an element to remove,
+// scan the list and remove the first occurrence of the given element
 int delete(node** head, void* to_remove){
     if(*head == NULL){
         fprintf(stderr, "The list is empty\n");
@@ -45,6 +47,8 @@ int delete(node** head, void* to_remove){
     return 0;
 }
 
+// Given the pointer to the head of the list and the pointer to an element to be added,
+// append the element to the list (to its end)
 int add(node** head, void* to_add, size_t data_size){
     node* new_node = (node*)malloc(sizeof(node));
 
@@ -67,6 +71,9 @@ int add(node** head, void* to_add, size_t data_size){
     return 0;
 }
 
+// Given the pointer to a list head, remove all elements from the list
+// NOTE: this function does not free the elements pointers: allocated
+// elements, will remain allocated
 void clear(node** head){
     node* current = *head;
 
@@ -80,13 +87,15 @@ void clear(node** head){
     *head = NULL;
 }
 
-// Remove first element in the list and remove it
+// Remove first element in the list and return it
 node* dequeue(node** head){
     node* ret = *head;
     *head = ret->next;
     return ret;
 }
 
+// Similar to function 'add', but the element is added to the list only if there is no other element equal to it
+// So, the list becomes the implementation of a set (no duplicated items)
 int add_if_not_present(node** head, void* to_add, size_t data_size){
     if(*head == NULL){
         return add(head, to_add, data_size);
@@ -118,6 +127,7 @@ int add_if_not_present(node** head, void* to_add, size_t data_size){
     return 1;
 }
 
+// Return the length of the list
 unsigned long length(node* head){
     unsigned long cont = 0;
 
