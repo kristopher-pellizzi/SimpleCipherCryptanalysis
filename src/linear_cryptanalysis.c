@@ -221,7 +221,8 @@ couple* seek_best_relation_by_input(uint8_t input_index){
     return ret;
 }
 
-// Add to the list of SBOXES to be analyzed in the path of the selected relation, the input bits to be used as its input
+// Add to the list of SBOXES to be analyzed in the path of the selected relation, the input bits to be used as its input.
+// It returns the number of elements added to the list
 int add_to_list(uint8_t* input_bits, node** head){
     int ret = 0;
     bitvector4* sbox_input = (bitvector4*)malloc(sizeof(bitvector4));
@@ -291,11 +292,29 @@ int next_combination(node** probable_keys_lists){
     return 1;
 }
 
+// Computes the delta threshold with which 2 float values are considered equal (e.g. given 0.54,
+// values between 0.53 and 0.55 are considered equal to the given one)
+double compute_delta(double previous){
+    double ret = 1;
+    int cont = 0;
+    double val = fabs(previous);
+    while(val < 1){
+        val *= 10;
+        cont++;
+    }
+
+    for(int i = 0; i < cont; i++){
+        ret /= 10;
+    }
+    return ret;
+}
+
 // Function performing the linear cryptanalysis using 'number_of_couples' pairs and using key_MSB as 64 Most
 // Significant Bits of the key
 int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_int64_t key_MSB){
     node* local_probable_keys[4];
 
+    // Initialize global variables
     for(int i = 0; i < 4; i++){
         OUTPUT_LISTS[i] = NULL;
         PROBABLE_KEYS[i] = NULL;
@@ -305,7 +324,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
     // U[i][j] contains the j-th bit in input to sboxes of the i-th round
     // V[i][j] contains the j-th bit at output of sboxes of the i-th round
 
-    // Analyze i relations
+    // Analyze i relations (or the minimum number to get all the subkeys at least once)
     for(int i = 0; i < 20; i++) {
         u_int8_t U[4][16] = {{0}};
         u_int8_t V[4][16] = {{0}};
@@ -321,22 +340,26 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
 
         double total_bias = 0.5;
+        // List of sboxes on the selected path to be analyzed
         node* sbox_list = NULL;
 
-        //int8_t considered_round = 0;
         int8_t considered_sbox = 0;
 
         int considered_round = 0;
         int round_boxes = 1;
         int items_added = 0;
+        // Until the whole path has been analyzed
         while(considered_round < 3) {
             bitvector4 *input_bits = get_bitvector4(selected_relation->x);
             bitvector4 *output_bits = get_bitvector4(selected_relation->y);
 
+            // For the pile-up lemma, p[e1, e2] = 1/2 * p[e1] * p[e2]
+            // Store total_bias as integer_bias[e1, e2] / 16 (16 is the number of possible inputs)
             total_bias *= 2 * BIAS_TABLE[selected_relation->x][selected_relation->y] / (float) 16;
             for (int j = 0; j < 4; j++) {
                 u_int8_t round_bit = j + (4 * considered_sbox);
 
+                // Update arrays U and V
                 if (input_bits->repr[3 - j] == 1) {
                     U[considered_round][round_bit] = 1;
                 }
@@ -350,15 +373,18 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
             }
 
+            // Add sboxes of the next round to the "still-to-be-analyzed" list of sboxes
             items_added += add_to_list(U[considered_round + 1], &sbox_list);
             round_boxes--;
 
+            // If there are no other sboxes to be analyzed in the current round...
             if(!round_boxes){
                 round_boxes = items_added;
                 considered_round++;
                 items_added = 0;
             }
 
+            // Consider a new sbox and follow the selected path
             couple* next_elem = (couple*) dequeue(&sbox_list)->elem;
             considered_sbox = next_elem->x;
             int input_index = next_elem->y;
@@ -366,6 +392,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             // printf("For now total bias is %.4f \n", total_bias);
         }
 
+        // Print the whole path of relations followed
         printf("Path: \n");
         print_state(U[0]);
         printf(" -> ");
@@ -389,7 +416,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
         printf(" holds with a theoretical bias of %.4f\n", total_bias);
 
 
-
+        // Count how many round key bits are guessd with the selected relation
         int8_t key_bits_number = 0;
         for(int j = 0; j < 16; j++){
             key_bits_number += U[3][j];
@@ -399,6 +426,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
         bitvector16* key_vector;
 
+        // Consider, for every possible subkey, each pair <ptx, ctx> and add to the proper list the subkeys with the highest actual bias (in absolute value) (i.e. the most probable subkeys)
         double previous_diff = -1;
         int most_probable_subkey = -1;
         u_int8_t output_sboxes_touched[4] = {0};
@@ -417,7 +445,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
                 output_sboxes_touched[k] = 0;
             }
 
-            // Check which sboxes of the last round are touched by the selected relation
+            // Check which sboxes of the last round are covered by the selected relation
             for(int k = 0; k < 16; k++){
                 if(U[3][k]){
                     u_int8_t sbox_index = k / 4;
@@ -441,6 +469,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
             u_int16_t key_val = get_val16(key_vector);
 
+            // For each pair <ptx, ctx>, count how many of them satisfy the selected relation and compute the actual bias of the subkey
             for(int q = 0; q < number_of_couples; q++){
                 u_int16_t V1 = key_val ^ pairs[q]->y;
                 u_int16_t sbox_input = reverse_sbox(V1);
@@ -461,7 +490,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
             double bias = ((float) counter / number_of_couples) - 0.5;
             printf("SUBKEY: %d\tBIAS: %.30f\n", j, bias);
-            double delta = fabs(1.0 / number_of_couples) ;
+            double delta = compute_delta(previous_diff);
             int add_to_lists = 0;
 
             if(fabs(bias) > previous_diff){
@@ -492,6 +521,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             }
         }
 
+        // Add the most probable subkeys for this relation to the global variable
         for(int k = 0; k < 4; k++) {
             node* tmp = local_probable_keys[k];
             while(tmp != NULL){
@@ -500,7 +530,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             }
         }
 
-        int considered_bit = 0;
+        /*int considered_bit = 0;
         bitvector* key_bitvector = get_bitvector(most_probable_subkey, key_bits_number);
         print_bitvector(key_bitvector);
         key_vector = get_bitvector16(0);
@@ -514,7 +544,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
                 }
 
             }
-        }
+        }*/
 
         /*printf("sbox_input: ");
         print_state(U[3]);
@@ -564,6 +594,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
         subkeys[k] = PROBABLE_KEYS[k];
     }
 
+    // Boolean variable indicating whether there are other possible keys to be tested
     int cont = 1;
 
     while(cont) {
