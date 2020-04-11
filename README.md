@@ -25,4 +25,4 @@ For now, the analysis does not always work. Some times, it is not able to find t
 Much of the complexity is simplified in the context with respect to real secure ciphers.*
 
 ## Credits
-The cipher structure and images are taken from "*Block Cipher Cryptanalysis - Part 1* of professor ***Gerardo Pelosi*** from the *Department of Electronics, Information and Bioengineering* (DEIB) at *Politecnico di Milano*.
+The cipher structure and images are taken from "*Block Cipher Cryptanalysis - Part 1* by professor ***Gerardo Pelosi*** from the *Department of Electronics, Information and Bioengineering* (DEIB) at *Politecnico di Milano*.
