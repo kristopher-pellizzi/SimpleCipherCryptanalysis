@@ -576,7 +576,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
     }
 
-    printf("LISTS: \n");
+    /*printf("LISTS: \n");
     for(int k = 0; k < 4; k++){
         printf("LIST %d\n", k);
         node* current = PROBABLE_KEYS[k];
@@ -587,7 +587,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             current = current -> next;
         }
 
-    }
+    }*/
 
     // Test all combinations of found subkeys
     bitvector16* key_vector = get_bitvector16(0);
