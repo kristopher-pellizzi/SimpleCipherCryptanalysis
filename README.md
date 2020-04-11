@@ -8,16 +8,14 @@ This project is an academic attempt, as a student, to implement the ***Simple***
 The cipher is implemented as a SPN block cipher. It consists of 3 rounds of *Add_Round_Key*, *Substitution Layer* (SBOXES) and *Permutation Layer*. The last round is composed by *Add_Round_Key*, *Substitution Layer*, *Add_Round_Key*.
 
 ### Cipher schematic
-![CipherSchematic]
-("https://github.com/kristopher-pellizzi/SimpleCipherCryptanalysis/blob/master/imgs/schematic.png")
+![CipherSchematic](https://github.com/kristopher-pellizzi/SimpleCipherCryptanalysis/blob/master/imgs/schematic.png)
 
 ### Sbox Description
 The sboxes are all the same, and described by the following table:
 
-![SboxDescription]
-("https://github.com/kristopher-pellizzi/SimpleCipherCryptanalysis/blob/master/imgs/sbox.png")
+![SboxDescription](https://github.com/kristopher-pellizzi/SimpleCipherCryptanalysis/blob/master/imgs/sbox.png)
 
-Every sbox has 4 bits both at input and at output. The table gives, for each possible value as input of the sbox (between 0 and 15, represented by their binary encoding) the corresponding output.
+Every sbox has 4 bits both at input and at output. The table gives, for each possible value as input of the sbox (between 0 and 15, represented by their hexadecimal encoding) the corresponding output.
 
 ## Linear Cryptanalysis
 The program tries to find a good relation between some bits of the plaintext and some bits of the last round sboxes input which should approximate, at least locally, the behaviour of the cipher with a certain theoretical probability, different from 0.5.
