@@ -23,3 +23,6 @@ For now, the analysis does not always work. Some times, it is not able to find t
 
 ***NOTE**: this project is to be considered as it is: an academic **individual** project, developed in dead times between personal studies, and thought to try and get in depth knowledge about linear cryptanalysis. This is not a guide or a manual or an actual implementation of a cipher or of the linear cryptanalysis algorithm.
 Much of the complexity is simplified in the context with respect to real secure ciphers.*
+
+## Credits
+The cipher structure and images are taken from "*Block Cipher Cryptanalysis - Part 1* of professor ***Gerardo Pelosi*** from the *Department of Electronics, Information and Bioengineering* (DEIB) at *Politecnico di Milano*.
