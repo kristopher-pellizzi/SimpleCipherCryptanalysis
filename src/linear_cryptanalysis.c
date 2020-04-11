@@ -293,8 +293,11 @@ int next_combination(node** probable_keys_lists){
 }
 
 // Computes the delta threshold with which 2 float values are considered equal (e.g. given 0.54,
-// values between 0.53 and 0.55 are considered equal to the given one)
+// values between 0.49 and 0.59 are considered equal to the given one). Delta has been calibrated empirically
 double compute_delta(double previous){
+    if(previous < 0){
+        return 0;
+    }
     double ret = 1;
     int cont = 0;
     double val = fabs(previous);
@@ -306,7 +309,7 @@ double compute_delta(double previous){
     for(int i = 0; i < cont; i++){
         ret /= 10;
     }
-    return ret;
+    return ret / 10 * 5;
 }
 
 // Function performing the linear cryptanalysis using 'number_of_couples' pairs and using key_MSB as 64 Most
@@ -493,7 +496,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             double delta = compute_delta(previous_diff);
             int add_to_lists = 0;
 
-            if(fabs(bias) > previous_diff){
+            if(fabs(bias) > previous_diff + delta){
                 for(int k = 0; k < 4; k++){
                     if(output_sboxes_touched[k])
                         clear(&local_probable_keys[k]);
@@ -573,7 +576,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
 
     }
 
-    /*printf("LISTS: \n");
+    printf("LISTS: \n");
     for(int k = 0; k < 4; k++){
         printf("LIST %d\n", k);
         node* current = PROBABLE_KEYS[k];
@@ -584,7 +587,7 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
             current = current -> next;
         }
 
-    }*/
+    }
 
     // Test all combinations of found subkeys
     bitvector16* key_vector = get_bitvector16(0);
@@ -614,6 +617,6 @@ int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_
         };
         cont = next_combination(subkeys);
     }
-    printf("SUBKEY NOT FOUND\n");
+    printf("SUBKEY NOT FOUND. TRY A DIFFERENT SET OF PAIRS\n");
     return 0;
 }

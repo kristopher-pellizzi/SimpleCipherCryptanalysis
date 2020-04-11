@@ -262,38 +262,39 @@ int test_list(){
 // Tests for linear cryptanalysis structures, algorithm and functions
 int test_linear_cryptanalysis(int attempts){
     int num =  40000;
-    couple** pairs = (couple**)malloc(sizeof(couple*) * num);
-
-    srand(time(0));
-    u_int64_t pow = 1 << 16;
-    u_int64_t MSB = 0;
-    for(int i = 0; i < 4; i++){
-        MSB += (u_int64_t )(rand() % pow) << (16 * i);
-    }
-    u_int16_t LSB = rand() % pow;
-    printf("MSB: %lu\tLSB: %d\n", MSB, LSB);
-    bitvector80* key_bitvector = get_bitvector80(MSB, LSB);
-    bitvector80_value* key = get_val80(key_bitvector);
-    printf("Encrypting with key: ");
-    print_bitvector80(key_bitvector);
-
-    for(int i = 0; i < num; i++){
-        u_int16_t ptx = rand() % pow;
-        u_int16_t ctx = encrypt_block(ptx, key_bitvector);
-        couple* pair = (couple*)malloc(sizeof(couple));
-        pair->x = ptx;
-        pair->y = ctx;
-        pairs[i] = pair;
-    }
-
-    printf("Reading bias table...\n");
-    if(read_bias_table()){
-        fprintf(stderr, "Error while reading the table...\n");
-        abort();
-    }
-
     int cont = 0;
     for(int i = 0; i < attempts; i++){
+        couple** pairs = (couple**)malloc(sizeof(couple*) * num);
+
+        srand(time(0));
+        u_int64_t pow = 1 << 16;
+        u_int64_t MSB = 0;
+        for(int i = 0; i < 4; i++){
+            MSB += (u_int64_t )(rand() % pow) << (16 * i);
+        }
+        u_int16_t LSB = rand() % pow;
+        printf("MSB: %lu\tLSB: %d\n", MSB, LSB);
+        bitvector80* key_bitvector = get_bitvector80(MSB, LSB);
+        bitvector80_value* key = get_val80(key_bitvector);
+        printf("Encrypting with key: ");
+        print_bitvector80(key_bitvector);
+
+        for(int i = 0; i < num; i++){
+            u_int16_t ptx = rand() % pow;
+            u_int16_t ctx = encrypt_block(ptx, key_bitvector);
+            couple* pair = (couple*)malloc(sizeof(couple));
+            pair->x = ptx;
+            pair->y = ctx;
+            pairs[i] = pair;
+        }
+
+        printf("Reading bias table...\n");
+        if(read_bias_table()){
+            fprintf(stderr, "Error while reading the table...\n");
+            abort();
+        }
+
+
         cont += perform_linear_cryptanalysis(num, pairs, key->MSB) ? 1 : 0;
     };
 
@@ -343,7 +344,7 @@ int main(){
 
     //tests();
     //test_list();
-    //test_linear_cryptanalysis(10);
+    //test_linear_cryptanalysis(100);
     run_linear_cryptanalysis();
     return 0;
 }
