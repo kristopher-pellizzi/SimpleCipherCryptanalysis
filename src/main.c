@@ -188,6 +188,14 @@ void print_int_list(node* current){
     printf("\n");
 }
 
+void print_vector_list(node* list){
+    node* current = list;
+    printf("LIST: \n");
+    while(current != NULL){
+        print_bitvector4((bitvector4*)(current->elem));
+        current = current->next;
+    }
+}
 int test_list(){
     node* int_list = NULL;
 
@@ -220,6 +228,19 @@ int test_list(){
     print_int_list(int_list);
     free(to_remove);
     clear(&int_list);
+
+    node* vector_list = NULL;
+
+    bitvector4* test = get_bitvector4(8);
+    add_if_not_present(&vector_list, test, sizeof(bitvector4));
+    print_vector_list(vector_list);
+    test = get_bitvector4(4);
+    add_if_not_present(&vector_list, test, sizeof(bitvector4));
+    print_vector_list(vector_list);
+    test = get_bitvector4(8);
+    add_if_not_present(&vector_list, test, sizeof(bitvector4));
+    print_vector_list(vector_list);
+
     return 0;
 }
 
@@ -236,9 +257,7 @@ int test_linear_cryptanalysis(){
     u_int16_t LSB = rand() % pow;
     printf("MSB: %lu\tLSB: %d\n", MSB, LSB);
     bitvector80* key_bitvector = get_bitvector80(MSB, LSB);
-    printf("First: ");
     bitvector80_value* key = get_val80(key_bitvector);
-    printf("MSB: %lu\tLSB: %d\n", key->MSB, key->LSB);
     printf("Encrypting with key: ");
     print_bitvector80(key_bitvector);
 
@@ -257,7 +276,12 @@ int test_linear_cryptanalysis(){
         abort();
     }
 
-    perform_linear_cryptanalysis(num, pairs);
+    int cont = 0;
+    for(int i = 0; i < 10; i++){
+        cont += perform_linear_cryptanalysis(num, pairs, key->MSB) ? 1 : 0;
+    };
+
+    printf("CORRECT %d/10\n", cont);
     return 0;
 }
 

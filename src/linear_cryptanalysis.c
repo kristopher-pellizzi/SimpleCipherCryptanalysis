@@ -11,6 +11,7 @@
 char* TABLE_NAME = "bias_table";
 u_int8_t IS_OUTPUT_SELECTED[4] = {0};
 node* OUTPUT_LISTS[4];
+node* PROBABLE_KEYS[4];
 
 int create_bias_table(){
     FILE* table_file = fopen(TABLE_NAME, "w");
@@ -226,15 +227,61 @@ int add_to_list(uint8_t* input_bits, node** head){
     return ret;
 }
 
-void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
+int test_round_key(u_int16_t ptx, u_int16_t ctx, u_int16_t round_key, u_int64_t key_MSB){
+    // NOTE: we assume to know the first 64 bits of the key. In reality, we should brute force them or continue with the linear cryptanalysis
+    // to further reduce the brute force space of the previous round keys. This is only a small demo.
+
+    u_int16_t state = ptx;
+    u_int16_t inverse_state = ctx;
+
+    // Apply 3 encryption rounds + 1 round key addition using the first 64 bits of the key (assumed to be known)
+    int mod_mask = 1 << 16;
+    for(int i = 0; i < 3; i++){
+        state = encryption_round(state, (key_MSB >> (64 - 16 * (i + 1))) % mod_mask);
+    }
+    state = add_round_key(state, key_MSB % mod_mask);
+
+    // Starting from the ctx, apply the last round key addition and invert the sbox
+    inverse_state = reverse_sbox(add_round_key(inverse_state, round_key));
+
+    // Compare the 2 computed states. If they are equal, the key round is the correct one
+    return state == inverse_state ? 1 : 0;
+
+}
+
+int next_combination(node** sbox_list){
+    int change = 1;
+
+    for(int i = 3; i >= 0; i--){
+        if(change) {
+            sbox_list[i] = sbox_list[i]->next;
+            change = 0;
+
+            if (sbox_list[i] == NULL) {
+                if (i == 0) {
+                    return 0;
+                }
+
+                sbox_list[i] = PROBABLE_KEYS[i];
+                change = 1;
+            }
+        }
+    }
+    return 1;
+}
+
+int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_int64_t key_MSB){
+    node* local_probable_keys[4];
+
     for(int i = 0; i < 4; i++){
         OUTPUT_LISTS[i] = NULL;
+        PROBABLE_KEYS[i] = NULL;
+        IS_OUTPUT_SELECTED[i] = 0;
     }
 
     // U[i][j] contains the j-th bit in input to sboxes of the i-th round
     // V[i][j] contains the j-th bit at output of sboxes of the i-th round
 
-    // TODO: to be implemented
     // Analyze i relations
     for(int i = 0; i < 20; i++) {
         u_int8_t U[4][16] = {{0}};
@@ -293,7 +340,7 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
             considered_sbox = next_elem->x;
             int input_index = next_elem->y;
             selected_relation = seek_best_relation_by_input(input_index);
-            printf("For now total bias is %.4f \n", total_bias);
+            // printf("For now total bias is %.4f \n", total_bias);
         }
 
         printf("Path: \n");
@@ -333,6 +380,10 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
         int most_probable_subkey = -1;
         u_int8_t output_sboxes_touched[4] = {0};
 
+        for(int k = 0; k < 4; k++){
+            local_probable_keys[k] = NULL;
+        }
+
         for(int j = 0; j < (1 << key_bits_number); j++){
             u_int64_t counter = 0;
             key_vector = get_bitvector16(0);
@@ -356,7 +407,7 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
             for(int k = 0; k < 4; k++){
                 if(output_sboxes_touched[k]){
                     for(int q = 3; q >= 0; q--) {
-                        key_vector->repr[4 * (3 - k) + q] = subkey_bitvector->repr[3 - considered_bit];
+                        key_vector->repr[4 * (3 - k) + q] = subkey_bitvector->repr[key_bits_number - 1 - considered_bit];
                         considered_bit++;
                     }
                 }
@@ -387,11 +438,43 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
 
             double bias = ((float) counter / number_of_couples) - 0.5;
             printf("SUBKEY: %d\tBIAS: %.30f\n", j, bias);
+            double delta = fabs(1.0 / number_of_couples) ;
+            int add_to_lists = 0;
+
             if(fabs(bias) > previous_diff){
+                for(int k = 0; k < 4; k++){
+                    if(output_sboxes_touched[k])
+                        clear(&local_probable_keys[k]);
+                }
                 previous_diff = fabs(bias);
                 most_probable_subkey = j;
+                add_to_lists = 1;
+            }
+            else if (fabs(bias) >= previous_diff - delta && fabs(bias) <= previous_diff + delta){
+                add_to_lists = 1;
             }
 
+            if(add_to_lists){
+                for(int k = 0; k < 4; k++){
+                    if(output_sboxes_touched[k]){
+                        bitvector4* sbox_subkey = get_bitvector4(0);
+
+                        for(int q = 0; q < 4; q++){
+                            sbox_subkey->repr[q] = key_vector->repr[(3 - k) * 4 + q];
+                        }
+
+                        add_if_not_present(&local_probable_keys[k], sbox_subkey, sizeof(bitvector4));
+                    }
+                }
+            }
+        }
+
+        for(int k = 0; k < 4; k++) {
+            node* tmp = local_probable_keys[k];
+            while(tmp != NULL){
+                add_if_not_present(&PROBABLE_KEYS[k], tmp->elem, tmp->data_size);
+                tmp = tmp -> next;
+            }
         }
 
         int considered_bit = 0;
@@ -402,18 +485,19 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
         for(int k = 0; k < 4; k++){
             if(output_sboxes_touched[k]){
                 for(int q = 0; q < 4; q++) {
-                    printf("k = %d\n", k);
+                    // printf("k = %d\n", k);
                     key_vector->repr[4 * (3 - k) + q] = key_bitvector->repr[considered_bit];
                     considered_bit++;
                 }
+
             }
         }
 
-        printf("sbox_input: ");
+        /*printf("sbox_input: ");
         print_state(U[3]);
         printf("\tkey: ");
         print_bitvector16(key_vector);
-        printf("Key bits: %d\n", key_bits_number);
+        printf("Key bits: %d\n", key_bits_number);*/
 
         /*print_state(U[0]);
         printf(" --> ");
@@ -432,6 +516,50 @@ void perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs){
         print_state(V[3]);
         printf("\n");*/
 
+
+
     }
 
+    /*printf("LISTS: \n");
+    for(int k = 0; k < 4; k++){
+        printf("LIST %d\n", k);
+        node* current = PROBABLE_KEYS[k];
+
+        while(current != NULL){
+            bitvector4* vector = (bitvector4*) current->elem;
+            print_bitvector4(vector);
+            current = current -> next;
+        }
+
+    }*/
+
+    // Test all combinations of found subkeys
+    bitvector16* key_vector = get_bitvector16(0);
+    node* subkeys[4];
+
+    for(int k = 0; k < 4; k++) {
+        subkeys[k] = PROBABLE_KEYS[k];
+    }
+
+    int cont = 1;
+
+    while(cont) {
+        for (int k = 0; k < 4; k++) {
+            for (int q = 0; q < 4; q++) {
+                bitvector4 *current_subkey = (bitvector4 *) subkeys[k]->elem;
+                key_vector->repr[(3 - k) * 4 + q] = current_subkey->repr[q];
+            }
+        }
+
+        u_int16_t key_val = get_val16(key_vector);
+        if (test_round_key(pairs[0]->x, pairs[0]->y, key_val, key_MSB)) {
+            printf("THE LAST ROUND KEY IS %u -> ", key_val);
+            print_bitvector16(key_vector);
+            printf("\n");
+            return 1;
+        };
+        cont = next_combination(subkeys);
+    }
+    printf("SUBKEY NOT FOUND\n");
+    return 0;
 }

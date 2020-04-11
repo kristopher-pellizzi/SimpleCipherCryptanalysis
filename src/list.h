@@ -18,4 +18,6 @@ struct node{
 int delete(node** head, void* to_remove);
 node* dequeue(node** head);
 int add(node** head, void* to_add, size_t data_size);
+int add_if_not_present(node** head, void* to_add, size_t data_size);
+unsigned long length(node* head);
 void clear(node** head);

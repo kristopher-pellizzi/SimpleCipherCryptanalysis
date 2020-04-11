@@ -16,3 +16,6 @@ void revert_sbox();
 void print_sbox(u_int8_t * table);
 u_int16_t sbox(u_int16_t state);
 u_int16_t reverse_sbox(u_int16_t state);
+
+u_int16_t encryption_round(u_int16_t state, u_int16_t key);
+u_int16_t add_round_key(u_int16_t state, u_int16_t key);
