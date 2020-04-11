@@ -6,6 +6,7 @@
 
 u_int8_t SBOX[16] = {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
+// This function creates the REVERSE_SBOX array according to array SBOX
 void revert_sbox(){
     for(int i = 0; i < 16; i++){
         REVERSE_SBOX[SBOX[i]] = i;
@@ -18,10 +19,12 @@ void print_sbox(u_int8_t * table){
     }
 }
 
+// AddRoundKey phase of the cipher (state XOR roundKey)
 u_int16_t add_round_key(u_int16_t state, u_int16_t key){
     return key ^ state;
 }
 
+// Apply SBOX to the current state
 u_int16_t sbox(u_int16_t state){
     u_int16_t ret = 0;
     u_int8_t s[4];
@@ -36,6 +39,7 @@ u_int16_t sbox(u_int16_t state){
     return ret;
 }
 
+// Apply the REVERSE_SBOX to the state
 u_int16_t reverse_sbox(u_int16_t state){
     u_int16_t ret = 0;
     u_int8_t s[4];
@@ -50,10 +54,12 @@ u_int16_t reverse_sbox(u_int16_t state){
     return ret;
 }
 
+// From a 16 bit vector, build the corresponding state as a numeric value
 u_int16_t build_state(bitvector16* vector){
     return get_val16(vector);
 }
 
+// Apply permutation phase of the cipher
 u_int16_t permutation(u_int16_t state){
     bitvector16* bitvector_state = get_bitvector16(state);
 
@@ -83,14 +89,17 @@ u_int16_t permutation(u_int16_t state){
     return ret;
 }
 
+// Perform a whole round of the cipher starting from state 'state' and using round key 'key'
 u_int16_t encryption_round(u_int16_t state, u_int16_t key){
     return permutation(sbox(add_round_key(key, state)));
 }
 
+// Perform a whole decryption round of the cipher. Arguments analogous to encryption_round
 u_int16_t decryption_round(u_int16_t state, u_int16_t key){
     return add_round_key(reverse_sbox(permutation(state)), key);
 }
 
+// Apply the whole encryption algorithm to the plaintext block 'ptx_block', by using 'key_bitvector' as a key
 u_int16_t encrypt_block(u_int16_t ptx_block, bitvector80* key_bitvector){
     u_int16_t state = ptx_block;
     bitvector80_value* key_value = get_val80(key_bitvector);
@@ -106,6 +115,7 @@ u_int16_t encrypt_block(u_int16_t ptx_block, bitvector80* key_bitvector){
     return state;
 }
 
+// Apply the whole decryption algorithm to he ciphertext block 'ctx_block', by using 'key_bitvector' as a key
 u_int16_t decrypt_block(u_int16_t ctx_block, bitvector80* key_bitvector){
     u_int16_t state = ctx_block;
     bitvector80_value* key_value = get_val80(key_bitvector);
@@ -120,6 +130,7 @@ u_int16_t decrypt_block(u_int16_t ctx_block, bitvector80* key_bitvector){
     return state;
 }
 
+// Unit tests for the cipher
 int tests() {
     // DEBUG SECTION
 
@@ -172,6 +183,7 @@ int tests() {
     return 0;
 }
 
+// Given a list of integers as argument, print it in a human-readable manner
 void print_int_list(node* current){
     if(current == NULL){
         printf("Empty list...\n");
@@ -188,6 +200,7 @@ void print_int_list(node* current){
     printf("\n");
 }
 
+// Given a list of bitvector (with 4 bits), print it in a human-readable manner
 void print_vector_list(node* list){
     node* current = list;
     printf("LIST: \n");
@@ -196,6 +209,8 @@ void print_vector_list(node* list){
         current = current->next;
     }
 }
+
+// Unit tests for list structure and functions
 int test_list(){
     node* int_list = NULL;
 
@@ -244,7 +259,8 @@ int test_list(){
     return 0;
 }
 
-int test_linear_cryptanalysis(){
+// Tests for linear cryptanalysis structures, algorithm and functions
+int test_linear_cryptanalysis(int attempts){
     int num =  40000;
     couple** pairs = (couple**)malloc(sizeof(couple*) * num);
 
@@ -277,12 +293,48 @@ int test_linear_cryptanalysis(){
     }
 
     int cont = 0;
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < attempts; i++){
         cont += perform_linear_cryptanalysis(num, pairs, key->MSB) ? 1 : 0;
     };
 
-    printf("CORRECT %d/10\n", cont);
+    printf("CORRECT %d/%d\n", cont, attempts);
     return 0;
+}
+
+// Run linear cryptanalysis function using 40000 random pairs <ptx, ctx>
+void run_linear_cryptanalysis(){
+    int num =  40000;
+    couple** pairs = (couple**)malloc(sizeof(couple*) * num);
+
+    srand(time(0));
+    u_int64_t pow = 1 << 16;
+    u_int64_t MSB = 0;
+    for(int i = 0; i < 4; i++){
+        MSB += (u_int64_t )(rand() % pow) << (16 * i);
+    }
+    u_int16_t LSB = rand() % pow;
+    printf("MSB: %lu\tLSB: %d\n", MSB, LSB);
+    bitvector80* key_bitvector = get_bitvector80(MSB, LSB);
+    bitvector80_value* key = get_val80(key_bitvector);
+    printf("Encrypting with key: ");
+    print_bitvector80(key_bitvector);
+
+    for(int i = 0; i < num; i++){
+        u_int16_t ptx = rand() % pow;
+        u_int16_t ctx = encrypt_block(ptx, key_bitvector);
+        couple* pair = (couple*)malloc(sizeof(couple));
+        pair->x = ptx;
+        pair->y = ctx;
+        pairs[i] = pair;
+    }
+
+    printf("Reading bias table...\n");
+    if(read_bias_table()){
+        fprintf(stderr, "Error while reading the table...\n");
+        abort();
+    }
+
+    perform_linear_cryptanalysis(num, pairs, key->MSB);
 }
 
 
@@ -291,8 +343,8 @@ int main(){
 
     //tests();
     //test_list();
-    test_linear_cryptanalysis();
-
+    //test_linear_cryptanalysis(10);
+    run_linear_cryptanalysis();
     return 0;
 }
 

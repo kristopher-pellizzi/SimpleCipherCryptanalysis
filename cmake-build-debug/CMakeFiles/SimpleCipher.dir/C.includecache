@@ -12,18 +12,6 @@ stdlib.h
 
 /Users/krijojo/CLionProjects/SimpleCipher/src/couple.h
 
-/Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.c
-stdio.h
--
-stdlib.h
--
-math.h
--
-list.h
-/Users/krijojo/CLionProjects/SimpleCipher/src/list.h
-linear_cryptanalysis.h
-/Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.h
-
 /Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.h
 zconf.h
 -
@@ -35,6 +23,18 @@ sbox.h
 /Users/krijojo/CLionProjects/SimpleCipher/src/sbox.h
 
 /Users/krijojo/CLionProjects/SimpleCipher/src/list.h
+
+/Users/krijojo/CLionProjects/SimpleCipher/src/main.c
+stdio.h
+-
+stdlib.h
+-
+time.h
+-
+list.h
+/Users/krijojo/CLionProjects/SimpleCipher/src/list.h
+linear_cryptanalysis.h
+/Users/krijojo/CLionProjects/SimpleCipher/src/linear_cryptanalysis.h
 
 /Users/krijojo/CLionProjects/SimpleCipher/src/sbox.h
 stdio.h
