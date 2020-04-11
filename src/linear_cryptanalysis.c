@@ -8,11 +8,20 @@
 #include "list.h"
 #include "linear_cryptanalysis.h"
 
+// Name of the file containing the bias table of the relations
 char* TABLE_NAME = "bias_table";
+
+// Array indicating whether a particular output of the first sbox is selected
 u_int8_t IS_OUTPUT_SELECTED[4] = {0};
+
+// Array of lists containing all the outputs of the sboxes involving n bits ((n-1)-th list contains
+// output values containing n bits)
 node* OUTPUT_LISTS[4];
+
+// Array of lists containing all the probable subkeys according to the sbox output they are XOR-ed to in the cipher
 node* PROBABLE_KEYS[4];
 
+// Create a textual file containing the biases of all the basic relations
 int create_bias_table(){
     FILE* table_file = fopen(TABLE_NAME, "w");
 
@@ -34,6 +43,7 @@ int create_bias_table(){
     return 0;
 }
 
+// Try to read the file containing the bias table. If it does not exist, create it and read it
 u_int8_t read_bias_table(){
     FILE* table_file = fopen(TABLE_NAME, "r");
 
@@ -66,6 +76,7 @@ void print_bias_table(){
     }
 }
 
+// Verify if the relation represented by 'input_mask' -> 'output_mask' holds by using 'input' as input for the SBOX
 u_int8_t verify_linear_relation(u_int8_t input_mask, u_int8_t output_mask, u_int8_t input){
     bitvector4* masked_input = get_bitvector4(input_mask & input);
     bitvector4* masked_output = get_bitvector4(output_mask & SBOX[input]);
@@ -86,6 +97,7 @@ u_int8_t verify_linear_relation(u_int8_t input_mask, u_int8_t output_mask, u_int
 
 }
 
+// Count how many set bits has the SBOX output 'output_index' (E.g: 6 = 0110 returns 2)
 u_int8_t count_outputs(u_int8_t output_index){
     bitvector4* output_bitvector = get_bitvector4(output_index);
     u_int8_t ret = 0;
@@ -98,7 +110,8 @@ u_int8_t count_outputs(u_int8_t output_index){
     return ret;
 }
 
-int output_already_selected(int output_index){
+// Returns a boolean value telling whether 'output_index' (i.e. output at the first SBOX) has already been covered in previous relations
+int output_already_covered(int output_index){
     bitvector4* output_vector = get_bitvector4(output_index);
     int to_be_discarded = 1;
 
@@ -110,6 +123,7 @@ int output_already_selected(int output_index){
     return to_be_discarded;
 }
 
+// Returns a boolean value telling whether all the bits of the output of the first SBOX have been covered by a previous relation at least once
 int all_output_selected(){
     for(int i = 0; i < 4; i++){
         if(!IS_OUTPUT_SELECTED[i])
@@ -118,6 +132,7 @@ int all_output_selected(){
     return 1;
 }
 
+// Heuristic-based function used to select the best relations to be used to guess the round key bits
 couple* select_relation(){
     couple* ret = (couple*)malloc(sizeof(couple));
 
@@ -143,7 +158,7 @@ couple* select_relation(){
         for (int i = 1; i < 16; i++) {
             int8_t bias_value = abs(BIAS_TABLE[i][output_index]);
             if(bias_value >= max_bias / 2) {
-                if (!output_already_selected(output_index) && bias_value > current_bias) {
+                if (!output_already_covered(output_index) && bias_value > current_bias) {
                     current_bias = bias_value;
                     ret->x = i;
                     ret->y = output_index;
@@ -170,12 +185,14 @@ couple* select_relation(){
     return ret;
 }
 
+// Prints the current state of the partial encryption
 void print_state(uint8_t* arr){
     for(int i = 0; i < 16; i++){
         printf("%d", arr[i]);
     }
 }
 
+// Given an input to a SBOX, return the best relation to be used having 'input_index' as input (heuristic-based)
 couple* seek_best_relation_by_input(uint8_t input_index){
     couple* ret = (couple*)malloc(sizeof(couple));
     node* current_node = OUTPUT_LISTS[0];
@@ -204,6 +221,7 @@ couple* seek_best_relation_by_input(uint8_t input_index){
     return ret;
 }
 
+// Add to the list of SBOXES to be analyzed in the path of the selected relation, the input bits to be used as its input
 int add_to_list(uint8_t* input_bits, node** head){
     int ret = 0;
     bitvector4* sbox_input = (bitvector4*)malloc(sizeof(bitvector4));
@@ -227,6 +245,7 @@ int add_to_list(uint8_t* input_bits, node** head){
     return ret;
 }
 
+// Check whether the round key is the one actually used to encrypt ptx into ctx
 int test_round_key(u_int16_t ptx, u_int16_t ctx, u_int16_t round_key, u_int64_t key_MSB){
     // NOTE: we assume to know the first 64 bits of the key. In reality, we should brute force them or continue with the linear cryptanalysis
     // to further reduce the brute force space of the previous round keys. This is only a small demo.
@@ -249,20 +268,22 @@ int test_round_key(u_int16_t ptx, u_int16_t ctx, u_int16_t round_key, u_int64_t 
 
 }
 
-int next_combination(node** sbox_list){
+// Function used to change combination of subkeys used, in turns, to compose the possible round key.
+// The function returns a boolean value indicating whether there are combinations left or not.
+int next_combination(node** probable_keys_lists){
     int change = 1;
 
     for(int i = 3; i >= 0; i--){
         if(change) {
-            sbox_list[i] = sbox_list[i]->next;
+            probable_keys_lists[i] = probable_keys_lists[i]->next;
             change = 0;
 
-            if (sbox_list[i] == NULL) {
+            if (probable_keys_lists[i] == NULL) {
                 if (i == 0) {
                     return 0;
                 }
 
-                sbox_list[i] = PROBABLE_KEYS[i];
+                probable_keys_lists[i] = PROBABLE_KEYS[i];
                 change = 1;
             }
         }
@@ -270,6 +291,8 @@ int next_combination(node** sbox_list){
     return 1;
 }
 
+// Function performing the linear cryptanalysis using 'number_of_couples' pairs and using key_MSB as 64 Most
+// Significant Bits of the key
 int perform_linear_cryptanalysis(u_int64_t number_of_couples, couple** pairs, u_int64_t key_MSB){
     node* local_probable_keys[4];
 
