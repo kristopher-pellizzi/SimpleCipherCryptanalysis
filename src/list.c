@@ -48,26 +48,22 @@ int delete(node** head, void* to_remove){
 }
 
 // Given the pointer to the head of the list and the pointer to an element to be added,
-// append the element to the list (to its end)
+// prepend the element to the list (to its head)
 int add(node** head, void* to_add, size_t data_size){
     node* new_node = (node*)malloc(sizeof(node));
 
     new_node->data_size = data_size;
     new_node->elem = to_add;
-    new_node->next = NULL;
+    new_node->prev = NULL;
 
     if(*head == NULL){
-        new_node->prev = NULL;
+        new_node->next = NULL;
         *head = new_node;
         return 0;
     }
 
-    node* current = *head;
-    while(current->next != NULL){
-        current = current->next;
-    }
-    current->next = new_node;
-    new_node->prev = current;
+    new_node->next = *head;
+    *head = new_node;
     return 0;
 }
 
